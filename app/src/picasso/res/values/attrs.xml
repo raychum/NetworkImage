@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="NetworkImageView">
+        <attr name="placeholderImage" format="integer" />
+        <attr name="failureImage" format="integer" />
+    </declare-styleable>
+</resources>
