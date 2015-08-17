@@ -1,7 +1,6 @@
 package com.example.ray.networkimage.activity;
 
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
@@ -28,18 +27,24 @@ import java.util.ArrayList;
  */
 public class MainFragment extends Fragment {
     private static final String TAG = MainFragment.class.getSimpleName();
-    public static int fragmentCount = -1;
-    int count = 0;
+    private final ArrayList<ImageModel.Result> results = new ArrayList<>();
+    private int pageCount;
+    private int count = 0;
     private boolean isLoading;
     private RecyclerViewAdapter adapter;
     private View rootView;
-    @Nullable
+
+    public static MainFragment newInstance(int pageCount) {
+        final MainFragment mainFragment = new MainFragment();
+        mainFragment.pageCount = pageCount;
+        return mainFragment;
+
+    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        fragmentCount++;
         rootView = inflater.inflate(R.layout.fragment_main, container, false);
         final TextView textView = (TextView) rootView.findViewById(R.id.page);
-        textView.setText("Page " + fragmentCount);
+        textView.setText("Page " + pageCount);
         final RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL));
         adapter = new RecyclerViewAdapter();
@@ -52,14 +57,20 @@ public class MainFragment extends Fragment {
             }
         }));
         recyclerView.setAdapter(adapter);
-        sendRequest();
+        if (results.size() == 0) {
+            sendRequest();
+        } else {
+            for (ImageModel.Result result : results) {
+                adapter.add(new ImageItem(result));
+            }
+        }
         return rootView;
     }
 
     private void sendRequest() {
         isLoading = true;
         final String tag_json_obj = "image_obj_req";
-        final String url = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=cat" + fragmentCount + "&rsz=8&imgsz=xxlarge&start=" + count;
+        final String url = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=cat" + pageCount + "&rsz=8&imgsz=medium&start=" + count;
         Log.d(TAG, "url=" + url);
         final StringRequest jsonObjReq = new StringRequest(Request.Method.GET,
                 url,
@@ -70,12 +81,12 @@ public class MainFragment extends Fragment {
                         ImageModel imageModel = gson.fromJson(response, ImageModel.class);
                         Log.d(TAG, "imageModel=" + imageModel);
                         if (imageModel != null && imageModel.responseData != null && imageModel.responseData.results != null){
-                            ArrayList<ImageModel.Result> results = imageModel.responseData.results;
-                            count += results.size();
-                            if (results.size() == 0){
+                            results.addAll(imageModel.responseData.results);
+                            count += imageModel.responseData.results.size();
+                            if (imageModel.responseData.results.size() == 0) {
                                 adapter.setShowLoadMore(false);
                             } else {
-                                for (ImageModel.Result result : results){
+                                for (ImageModel.Result result : imageModel.responseData.results) {
                                     adapter.add(new ImageItem(result));
                                 }
                             }
@@ -100,7 +111,6 @@ public class MainFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
-        fragmentCount--;
         super.onDestroyView();
     }
 }

@@ -1,7 +1,7 @@
 package com.example.ray.networkimage.activity;
 
-import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -11,12 +11,21 @@ import com.example.ray.networkimage.R;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
 
+    public static int pageCount = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.container, new MainFragment(), MainFragment.class.getName()).commit();
+        newPage();
+    }
+
+    private void newPage() {
+        pageCount++;
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        if (pageCount != 1) {
+            ft.addToBackStack(null);
+        }
+        ft.replace(R.id.container, MainFragment.newInstance(pageCount), MainFragment.class.getName()).commit();
     }
 
     @Override
@@ -27,9 +36,13 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        final Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
+        newPage();
         return true;
     }
 
+    @Override
+    public void onBackPressed() {
+        pageCount--;
+        super.onBackPressed();
+    }
 }
