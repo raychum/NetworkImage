@@ -38,12 +38,12 @@ public class ImageItem extends RecyclerViewItem<ImageItem.ViewHolder> {
             Display display = ((WindowManager) viewHolder.itemView.getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
             Point size = new Point();
             display.getSize(size);
-            int width = size.x;
+            int width = size.x / 3;
             float height = (float)width/(float)result.width * (float)result.height;
             if (viewHolder.itemView.getLayoutParams().height != (int) height) {
                 viewHolder.itemView.getLayoutParams().height = (int) height;
             }
-            viewHolder.imageView.load(result.url);
+            viewHolder.imageView.resize(width, (int) height).load(result.url);
         }
     }
 
